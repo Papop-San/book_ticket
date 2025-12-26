@@ -12,10 +12,12 @@ describe('EventService', () => {
   };
 
   beforeEach(async () => {
+    jest.clearAllMocks();
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         EventService,
-        { provide: DbService, useValue: mockDbService }, 
+        { provide: DbService, useValue: mockDbService },
       ],
     }).compile();
 
@@ -27,62 +29,108 @@ describe('EventService', () => {
     expect(service).toBeDefined();
   });
 
+  /* ---------------- CREATE ---------------- */
   describe('create', () => {
     it('should create an event', async () => {
-      mockDbService.query.mockResolvedValueOnce([]); 
-      const insertedEvent = { id: 1, name: 'Flight A1', total_seats: 20 };
-      mockDbService.query.mockResolvedValueOnce([insertedEvent]); 
-      const result = await service.create({ name: 'Flight A1', total_seats: 20 });
+      const insertedEvent = {
+        id: 1,
+        name: 'Flight A1',
+        total_seats: 20,
+      };
+
+      mockDbService.query.mockResolvedValueOnce([insertedEvent]);
+
+      const result = await service.create({
+        name: 'Flight A1',
+        total_seats: 20,
+      });
+
       expect(result).toEqual(insertedEvent);
+      expect(db.query).toHaveBeenCalled();
     });
 
-    it('should throw ConflictException if name exists', async () => {
-      mockDbService.query.mockResolvedValueOnce([{}]); 
-      await expect(service.create({ name: 'Flight A1', total_seats: 20 }))
-        .rejects.toThrow(ConflictException);
+    it('should throw ConflictException if event name already exists', async () => {
+      mockDbService.query.mockRejectedValueOnce({
+        code: '23505',
+      });
+
+      await expect(
+        service.create({ name: 'Flight A1', total_seats: 20 }),
+      ).rejects.toThrow(ConflictException);
     });
   });
 
+  /* ---------------- FIND ONE ---------------- */
   describe('findOne', () => {
     it('should return an event', async () => {
-      const event = { id: 1, name: 'Flight A1', total_seats: 20 };
+      const event = {
+        id: 1,
+        name: 'Flight A1',
+        total_seats: 20,
+      };
+
       mockDbService.query.mockResolvedValueOnce([event]);
+
       const result = await service.findOne(1);
       expect(result).toEqual(event);
     });
 
     it('should throw NotFoundException if not found', async () => {
       mockDbService.query.mockResolvedValueOnce([]);
-      await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
+
+      await expect(service.findOne(999)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
+  /* ---------------- UPDATE ---------------- */
   describe('update', () => {
     it('should update an event', async () => {
-      const updatedEvent = { id: 1, name: 'Flight B1', total_seats: 30 };
+      const updatedEvent = {
+        id: 1,
+        name: 'Flight B1',
+        total_seats: 30,
+      };
+
       mockDbService.query.mockResolvedValueOnce([updatedEvent]);
-      const result = await service.update(1, { name: 'Flight B1', total_seats: 30 });
+
+      const result = await service.update(1, {
+        name: 'Flight B1',
+        total_seats: 30,
+      });
+
       expect(result).toEqual(updatedEvent);
     });
 
-    it('should throw NotFoundException if not found', async () => {
+    it('should throw NotFoundException if event not found', async () => {
       mockDbService.query.mockResolvedValueOnce([]);
-      await expect(service.update(999, { name: 'X', total_seats: 10 }))
-        .rejects.toThrow(NotFoundException);
+
+      await expect(
+        service.update(999, { name: 'X', total_seats: 10 }),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
+  /* ---------------- REMOVE ---------------- */
   describe('remove', () => {
     it('should delete an event', async () => {
-      mockDbService.query.mockResolvedValueOnce([{ id: 1 }]); 
+      mockDbService.query.mockResolvedValueOnce([{ id: 1 }]);
+
       const result = await service.remove(1);
-      expect(result).toEqual({ message: 'Event with id 1 deleted successfully', id: 1 });
+
+      expect(result).toEqual({
+        message: 'Event with id 1 deleted successfully',
+        id: 1,
+      });
     });
 
-    it('should throw NotFoundException if not found', async () => {
+    it('should throw NotFoundException if event not found', async () => {
       mockDbService.query.mockResolvedValueOnce([]);
-      await expect(service.remove(999)).rejects.toThrow(NotFoundException);
+
+      await expect(service.remove(999)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });
-  

@@ -3,9 +3,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DbModule } from './database/db.module';
 import { EventModule } from './module/event/event.module';
+import { SeatsModule } from './module/seats/seats.module';
+import { BookModule } from './module/book/book.module';
 
 @Module({
-  imports: [DbModule ,EventModule],
+  imports: [DbModule ,EventModule, SeatsModule, BookModule],
   controllers: [AppController],
   providers: [AppService],
 })

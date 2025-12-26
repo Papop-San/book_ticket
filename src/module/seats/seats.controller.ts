@@ -2,10 +2,11 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { SeatsService } from './seats.service';
 import { CreateSeatDto } from './dto/create-seat.dto';
 import { UpdateSeatDto } from './dto/update-seat.dto';
+import { RemoveSeatsDto } from '../event/dto/remove-event.dto';
 
 @Controller('seats')
 export class SeatsController {
-  constructor(private readonly seatsService: SeatsService) {}
+  constructor(private readonly seatsService: SeatsService) { }
 
   @Post()
   create(@Body() createSeatDto: CreateSeatDto) {
@@ -18,17 +19,17 @@ export class SeatsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.seatsService.findOne(+id);
+  findOne(@Param('id') id: number) {
+    return this.seatsService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSeatDto: UpdateSeatDto) {
-    return this.seatsService.update(+id, updateSeatDto);
+  update(@Param('id') id: number, @Body() updateSeatDto: UpdateSeatDto) {
+    return this.seatsService.update(id, updateSeatDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.seatsService.remove(+id);
+  @Delete()
+  remove(@Body() dto: RemoveSeatsDto) {
+    return this.seatsService.remove(dto);
   }
 }
