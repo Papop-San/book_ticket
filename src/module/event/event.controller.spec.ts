@@ -5,10 +5,19 @@ import { EventService } from './event.service';
 describe('EventController', () => {
   let controller: EventController;
 
+  const mockEventService = {
+    create: jest.fn(),
+    findOne: jest.fn(),
+    update: jest.fn(),
+    remove: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [EventController],
-      providers: [EventService],
+      providers: [
+        { provide: EventService, useValue: mockEventService }, 
+      ],
     }).compile();
 
     controller = module.get<EventController>(EventController);

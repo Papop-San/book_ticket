@@ -67,12 +67,10 @@ export class EventService {
   }
 
   async remove(id: number) {
-    const deletedRows = await this.db.query(
-      `DELETE FROM events WHERE id = $1 RETURNING id`,
-      [id],
-    );
-
-    if (!deletedRows.length) throw new NotFoundException(`Event with id ${id} not found`);
-    return { message: `Event with id ${id} deleted successfully` };
+  const deleted = await this.db.query('DELETE FROM events WHERE id = $1 RETURNING *', [id]);
+  if (!deleted.length) {
+    throw new NotFoundException(`Event with id ${id} not found`);
   }
+  return { message: `Event with id ${id} deleted successfully`, id };
+}
 }
