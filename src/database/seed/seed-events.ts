@@ -7,18 +7,18 @@ const pool = new Pool({
 
 async function seedEvents() {
     const events = [
-        { name: 'Flight Phuket', total_seats: 20 },
-        { name: 'Flight Bangkok', total_seats: 25 },
-        { name: 'Flight Chiang Mai', total_seats: 30 },
+        { name: 'Flight Phuket' , capacity:10 },
+        { name: 'Flight Bangkok' , capacity:10 },
+        { name: 'Flight Chiang Mai', capacity:10 },
     ];
 
     for (const event of events) {
         await pool.query(
             `
-        INSERT INTO events (name, total_seats, created_at, updated_at)
-        VALUES ($1, $2, NOW(), NOW())
+        INSERT INTO events (name, capacity,  created_at, updated_at)
+        VALUES ($1, $2 ,NOW(), NOW())
         `,
-            [event.name, event.total_seats],
+            [event.name, event.capacity],
         );
     }
 

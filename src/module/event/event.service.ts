@@ -6,6 +6,7 @@ import {
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { DbService } from '../../database/db.service';
+import { dot } from 'node:test/reporters';
 
 @Injectable()
 export class EventService {
@@ -15,16 +16,16 @@ export class EventService {
     try {
       const [event] = await this.db.query(
         `
-        INSERT INTO events (name, total_seats, created_at, updated_at)
+        INSERT INTO events (name, capacity, created_at, updated_at)
         VALUES ($1, $2, NOW(), NOW())
         RETURNING *
         `,
-        [dto.name, dto.total_seats],
+        [dto.name , dto.capacity],
       );
 
       return event;
     } catch (err) {
-      // PostgreSQL unique violation
+     
       if (err.code === '23505') {
         throw new ConflictException(
           `Event name "${dto.name}" already exists`,
@@ -36,7 +37,7 @@ export class EventService {
 
   async findAll() {
     return this.db.query(`
-      SELECT id, name, total_seats, created_at, updated_at
+      SELECT id, name, capacity
       FROM events
       ORDER BY created_at ASC
     `);
@@ -46,7 +47,7 @@ export class EventService {
     try {
       const [event] = await this.db.query(
         `
-        SELECT id, name, total_seats, created_at, updated_at
+        SELECT id, name, capacity
         FROM events
         WHERE id = $1
         `,
@@ -67,12 +68,11 @@ export class EventService {
       UPDATE events
       SET
         name = COALESCE($1, name),
-        total_seats = COALESCE($2, total_seats),
         updated_at = NOW()
-      WHERE id = $3
+      WHERE id = $2
       RETURNING *
       `,
-        [dto.name, dto.total_seats, id],
+        [dto.name,  id],
       );
 
       if (!event) {

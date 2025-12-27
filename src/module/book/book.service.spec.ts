@@ -107,15 +107,15 @@ describe('BookService', () => {
   /* ---------------- UPDATE ---------------- */
   describe('update', () => {
     it('should update booking successfully', async () => {
+
       mockDbService.query.mockResolvedValueOnce([
-        { id: 1, first_name: 'Updated' },
+        { id: 1, first_name: 'Updated', last_name: 'User', seat_id: 1, email: 'a@b.com', status: 'BOOKED' }
       ]);
 
-      const result = await service.update(1, {
-        first_name: 'Updated',
-      });
+      const result = await service.update(1, { first_name: 'Updated' });
 
-      expect(result.first_name).toBe('Updated');
+      expect(result.booking.first_name).toBe('Updated');
+      expect(result.message).toBe('Updated updated successfully');
     });
 
     it('should throw NotFoundException if booking not found', async () => {
@@ -126,31 +126,56 @@ describe('BookService', () => {
       ).rejects.toThrow(NotFoundException);
     });
   });
-
   /* ---------------- REMOVE ---------------- */
   describe('remove', () => {
     it('should delete booking and update seat', async () => {
+      // mock SELECT
       mockDbService.query
-        .mockResolvedValueOnce([
-          { id: 1, seat_id: 5 },
-        ]) // SELECT booking
+        .mockResolvedValueOnce([{ id: 1, first_name: 'John', seat_id: 1 }])
         .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([
-          { id: 1 },
-        ]);
+        .mockResolvedValueOnce([{ id: 1, first_name: 'John', seat_id: 1 }]);
 
-      const result = await service.remove('john@test.com');
+      const result = await service.remove('john@example.com');
 
-      expect(result.message).toContain('deleted successfully');
-      expect(mockDbService.query).toHaveBeenCalledTimes(3);
+      expect(result.message).toBe('John cancelled, seats available again');
     });
 
     it('should throw NotFoundException if booking not found', async () => {
       mockDbService.query.mockResolvedValueOnce([]);
 
-      await expect(
-        service.remove('notfound@test.com'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.remove('notfound@example.com')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  /* ---------------- GET EVENT BOOKINGS ---------------- */
+  describe('getEventBookings', () => {
+    it('should return bookings grouped by event', async () => {
+      const mockResult = [
+        {
+          event_id: 1,
+          bookings: [
+            { first_name: 'Alice', last_name: 'Smith', email: 'alice@example.com', status: 'BOOKED' },
+          ],
+          availableSeats: 9,
+          status: 'Available',
+        },
+        {
+          event_id: 2,
+          bookings: [
+            { first_name: 'Bob', last_name: 'Johnson', email: 'bob@example.com', status: 'BOOKED' },
+            { first_name: 'Charlie', last_name: 'Brown', email: 'charlie@example.com', status: 'BOOKED' },
+          ],
+          availableSeats: 8,
+          status: 'Available',
+        },
+      ];
+
+      mockDbService.query.mockResolvedValueOnce(mockResult);
+
+      const result = await service.getEventBookings();
+
+      expect(mockDbService.query).toHaveBeenCalled();
+      expect(result).toEqual(mockResult);
     });
   });
 });

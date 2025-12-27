@@ -1,4 +1,4 @@
-export class CreateEventDto {
-    name: string;
-    total_seats: number;
-}
+    export class CreateEventDto {
+        name: string;
+        capacity: number
+    }

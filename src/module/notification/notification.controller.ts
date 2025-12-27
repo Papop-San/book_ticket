@@ -3,7 +3,7 @@ import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 
-@Controller('notification')
+@Controller('notifications')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
@@ -18,17 +18,22 @@ export class NotificationController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.notificationService.findOne(+id);
+  findOne(@Param('id') id: number) {
+    return this.notificationService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateNotificationDto: UpdateNotificationDto) {
-    return this.notificationService.update(+id, updateNotificationDto);
+  update(@Param('id') id: number, @Body() updateNotificationDto: UpdateNotificationDto) {
+    return this.notificationService.update(id, updateNotificationDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: number) {
     return this.notificationService.remove(+id);
+  }
+
+  @Get('check/:id')
+  checkBookSeats(@Param('id') id: number) {
+    return this.notificationService.checkBookSeats(+id);
   }
 }

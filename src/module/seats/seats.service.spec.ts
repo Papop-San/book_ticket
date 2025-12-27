@@ -1,7 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SeatsService } from './seats.service';
 import { DbService } from '../../database/db.service';
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import { CreateSeatDto } from './dto/create-seat.dto';
 
 describe('SeatsService', () => {
   let service: SeatsService;
@@ -30,27 +31,35 @@ describe('SeatsService', () => {
   });
 
   /* ---------------- CREATE ---------------- */
-  describe('create', () => {
-    it('should create seats (multiple)', async () => {
-      const dto = {
-        event_id: 1,
-        seat_codes: ['A1', 'A2'],
-      };
+ describe('create', () => {
+  it('should create seats (multiple)', async () => {
+    const dto: CreateSeatDto = { event_id: 1, seat_codes: ['A1', 'A2'] };
 
-      mockDbService.query
-        .mockResolvedValueOnce([{ id: 1, seat_code: 'A1' }])
-        .mockResolvedValueOnce([{ id: 2, seat_code: 'A2' }]);
+    // mock capacity ของ event
+    mockDbService.query
+      .mockResolvedValueOnce([{ capacity: 10 }]) 
+      .mockResolvedValueOnce([{ count: '0' }]) 
+      .mockResolvedValueOnce([{ id: 1, event_id: 1, seat_code: 'A1', status: 'AVAILABLE', created_at: new Date(), updated_at: new Date() }]) // insert seat A1
+      .mockResolvedValueOnce([{ id: 2, event_id: 1, seat_code: 'A2', status: 'AVAILABLE', created_at: new Date(), updated_at: new Date() }]); // insert seat A2
 
-      const result = await service.create(dto);
+    const result = await service.create(dto);
 
-      expect(result).toEqual([
-        { id: 1, seat_code: 'A1' },
-        { id: 2, seat_code: 'A2' },
-      ]);
-
-      expect(mockDbService.query).toHaveBeenCalledTimes(2);
-    });
+    expect(result).toHaveLength(2);
+    expect(result[0].seat_code).toBe('A1');
+    expect(result[1].seat_code).toBe('A2');
   });
+
+  it('should throw BadRequestException if exceeding capacity', async () => {
+    const dto: CreateSeatDto = { event_id: 1, seat_codes: ['A1', 'A2', 'A3'] };
+
+    // mock capacity = 2, current seats = 1 → total 4 > 2
+    mockDbService.query
+      .mockResolvedValueOnce([{ capacity: 2 }]) // query event
+      .mockResolvedValueOnce([{ count: '1' }]); // query COUNT(*)
+
+    await expect(service.create(dto)).rejects.toThrow(BadRequestException);
+  });
+});
 
   /* ---------------- FIND ALL ---------------- */
   describe('findAll', () => {

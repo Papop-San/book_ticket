@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { SeatsService } from './seats.service';
 import { CreateSeatDto } from './dto/create-seat.dto';
 import { UpdateSeatDto } from './dto/update-seat.dto';
-import { RemoveSeatsDto } from '../event/dto/remove-event.dto';
+import { RemoveSeatsDto } from './dto/remove-event.dto';
 
 @Controller('seats')
 export class SeatsController {

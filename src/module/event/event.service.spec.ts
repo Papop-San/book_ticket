@@ -42,7 +42,7 @@ describe('EventService', () => {
 
       const result = await service.create({
         name: 'Flight A1',
-        total_seats: 20,
+   
       });
 
       expect(result).toEqual(insertedEvent);
@@ -55,7 +55,7 @@ describe('EventService', () => {
       });
 
       await expect(
-        service.create({ name: 'Flight A1', total_seats: 20 }),
+        service.create({ name: 'Flight A1' }),
       ).rejects.toThrow(ConflictException);
     });
   });
@@ -97,7 +97,6 @@ describe('EventService', () => {
 
       const result = await service.update(1, {
         name: 'Flight B1',
-        total_seats: 30,
       });
 
       expect(result).toEqual(updatedEvent);
@@ -107,7 +106,7 @@ describe('EventService', () => {
       mockDbService.query.mockResolvedValueOnce([]);
 
       await expect(
-        service.update(999, { name: 'X', total_seats: 10 }),
+        service.update(999, { name: 'X',}),
       ).rejects.toThrow(NotFoundException);
     });
   });

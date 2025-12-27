@@ -12,6 +12,12 @@ export class BookController {
     return this.bookService.create(createBookDto);
   }
 
+
+  @Get('/admin')
+  getEventBookings() {
+    return this.bookService.getEventBookings();
+  }
+
   @Get()
   findAll() {
     return this.bookService.findAll();
@@ -22,15 +28,16 @@ export class BookController {
     return this.bookService.findOne(+id);
   }
 
-    @Patch(':id')
-    update(@Param('id') id: number, @Body() updateBookDto: UpdateBookDto) {
-      return this.bookService.update(+id, updateBookDto);
-    }
+  @Patch(':id')
+  update(@Param('id') id: number, @Body() updateBookDto: UpdateBookDto) {
+    return this.bookService.update(+id, updateBookDto);
+  }
 
   @Delete(':email')
   remove(@Param('email') email: string) {
     return this.bookService.remove(email);
   }
+
 
 
 

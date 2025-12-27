@@ -1,4 +1,10 @@
+export type NotificationType =
+  | 'FULL'
+  | 'AVAILABLE'
+  | 'TESTING';
+
+
 export class CreateNotificationDto {
-    type: "FULL" | "AVAILABLE"
+    type: NotificationType
     message: string;
 }

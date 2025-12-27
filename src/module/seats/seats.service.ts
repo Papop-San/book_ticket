@@ -2,10 +2,11 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  BadRequestException
 } from '@nestjs/common';
 import { CreateSeatDto, Seat } from './dto/create-seat.dto';
 import { UpdateSeatDto } from './dto/update-seat.dto';
-import { RemoveSeatsDto } from '../event/dto/remove-event.dto';
+import { RemoveSeatsDto } from './dto/remove-event.dto';
 import { DbService } from '../../database/db.service';
 
 @Injectable()
@@ -14,21 +15,42 @@ export class SeatsService {
 
   async create(dto: CreateSeatDto) {
     try {
+      const [event] = await this.db.query(
+        `SELECT capacity FROM events WHERE id = $1`,
+        [dto.event_id],
+      );
+
+      if (!event) {
+        throw new NotFoundException(`Event with id ${dto.event_id} not found`);
+      }
+
+      const rows = await this.db.query(
+        `SELECT COUNT(*) as count FROM seats WHERE event_id = $1`,
+        [dto.event_id],
+      );
+
+      const currentCount = rows && rows[0] ? parseInt(rows[0].count, 10) : 0;
+
+      if (currentCount + dto.seat_codes.length > event.capacity) {
+        throw new BadRequestException(
+          `Cannot create ${dto.seat_codes.length} seats. Capacity exceeded.`,
+        );
+      }
+
       const result: Seat[] = [];
 
       for (const seatCode of dto.seat_codes) {
         const [seat] = await this.db.query(
           `
-          INSERT INTO seats (event_id, seat_code, status, created_at, updated_at)
-          VALUES ($1, $2, 'AVAILABLE', NOW(), NOW())
-          RETURNING *
-          `,
+        INSERT INTO seats (event_id, seat_code, status, created_at, updated_at)
+        VALUES ($1, $2, 'AVAILABLE', NOW(), NOW())
+        RETURNING *
+        `,
           [dto.event_id, seatCode],
         );
 
         result.push(seat);
       }
-
 
       return result;
     } catch (err) {
@@ -38,6 +60,7 @@ export class SeatsService {
       throw err;
     }
   }
+
 
   async findAll() {
     try {
