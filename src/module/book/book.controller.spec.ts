@@ -5,10 +5,20 @@ import { BookService } from './book.service';
 describe('BookController', () => {
   let controller: BookController;
 
+  const mockBookService = {
+    create: jest.fn(),
+    findOne: jest.fn(),
+    update: jest.fn(),
+    remove: jest.fn(),
+  };
+
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [BookController],
-      providers: [BookService],
+      providers: [
+         {provide: BookService , useValue: mockBookService }
+      ],
     }).compile();
 
     controller = module.get<BookController>(BookController);

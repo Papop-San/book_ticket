@@ -74,24 +74,25 @@ export class BookService {
   }
 
   async findOne(id: number) {
-    try {
-      const book = await this.db.query(
-        `SELECT id , seat_id , first_name , last_name , email , status 
-        FROM bookings
-        WHERE id = $1
-        `, [id]
-      )
+  try {
+    const [book] = await this.db.query(
+      `
+      SELECT id , seat_id , first_name , last_name , email , status 
+      FROM bookings
+      WHERE id = $1
+      `,
+      [id],
+    );
 
-      if (!book) {
-        throw new NotFoundException(`Booking with id ${id} not found`);
-      }
-
-      return book
-
-    } catch (err) {
-      throw err;
+    if (!book) {
+      throw new NotFoundException(`Booking with id ${id} not found`);
     }
+
+    return book;
+  } catch (err) {
+    throw err;
   }
+}
 
   async update(id: number, dto: UpdateBookDto) {
     try {
