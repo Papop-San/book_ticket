@@ -36,11 +36,11 @@ export class BookService {
 
       const [book] = await this.db.query(
         `
-        INSERT INTO bookings (seat_id, first_name, last_name, email, status, created_at, updated_at )
-        VALUES ($1, $2, $3, $4, 'BOOKED', NOW(), NOW())
+        INSERT INTO bookings (seat_id, name, email, status, created_at, updated_at )
+        VALUES ($1, $2, $3, 'BOOKED', NOW(), NOW())
         RETURNING *
         `,
-        [dto.seat_id, dto.first_name, dto.last_name, dto.email],
+        [dto.seat_id, dto.name , dto.email],
       );
       await this.db.query(
         `
@@ -68,7 +68,7 @@ export class BookService {
     try {
       return await this.db.query(
         `
-        SELECT id , seat_id , first_name , last_name , email , status FROM bookings
+        SELECT id , seat_id , name, email , status FROM bookings
          ORDER BY  seat_id
         `
       )
@@ -83,7 +83,7 @@ export class BookService {
     try {
       const [book] = await this.db.query(
         `
-      SELECT id , seat_id , first_name , last_name , email , status 
+      SELECT id , seat_id , name , email , status 
       FROM bookings
       WHERE id = $1
       `,
@@ -107,18 +107,16 @@ export class BookService {
       UPDATE bookings
       SET
         seat_id    = COALESCE($1, seat_id),
-        first_name = COALESCE($2, first_name),
-        last_name  = COALESCE($3, last_name),
-        email      = COALESCE($4, email),
-        status     = COALESCE($5, status),
+        name       =  COALESCE($2, name),
+        email      = COALESCE($3, email),
+        status     = COALESCE($4, status),
         updated_at = NOW()
-      WHERE id = $6
+      WHERE id = $5
       RETURNING *
       `,
         [
           dto.seat_id,
-          dto.first_name,
-          dto.last_name,
+          dto.name,
           dto.email,
           dto.status,
           id,
@@ -130,7 +128,7 @@ export class BookService {
       }
 
       return {
-        message: `${book.first_name} updated successfully`,
+        message: `${book.name} updated successfully`,
         booking: book,
       };
     } catch (err) {
@@ -168,7 +166,7 @@ export class BookService {
     }
 
     return {
-      message: `${deleted[0].first_name} cancelled, seats available again`,
+      message: `${deleted[0].name} cancelled, seats available again`,
     };
   }
 
@@ -180,7 +178,7 @@ export class BookService {
 
     for (const event of events) {
       const bookings = await this.db.query(
-        `SELECT first_name AS name, email FROM bookings WHERE seat_id IN 
+        `SELECT name, email FROM bookings WHERE seat_id IN 
        (SELECT id FROM seats WHERE event_id = $1)`,
         [event.id],
       );

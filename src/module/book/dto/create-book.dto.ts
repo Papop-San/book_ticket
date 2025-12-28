@@ -1,7 +1,6 @@
 export class CreateBookDto {
   seat_id: number;
-  first_name: string;
-  last_name: string;
+  name: string;
   email: string;
   status: BookingStatus;
 } 
