@@ -30,7 +30,9 @@ npm install
 ## Command Seed Running
 
 ```bash
-
+  npx ts-node .\src\database\seed\seed-events.ts
+  npx ts-node .\src\database\seed\seed-notification.ts
+  npx ts-node .\src\database\seed\seed-seats.ts
 ```
 
 ## Command Running 
@@ -48,8 +50,8 @@ npm run test:watch
 ## URL 
 
 ```bash
-api url : http://localhost:8080/api
-doc url : http://localhost:8080/api-docs
+api url: http://localhost:8080/api
+doc url: http://localhost:8080/api-docs
 ```
 
 
