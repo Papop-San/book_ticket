@@ -21,3 +21,37 @@ DB_PASSWORD=02749
 DB_NAME=seats
 ```
 
+## Install dependencies
+
+```bash
+npm install
+```
+
+## Command Seed Running
+
+```bash
+
+```
+
+## Command Running 
+
+```bash
+npm run start:dev
+```
+
+## Command Testing
+
+```bash
+npm run test:watch
+```
+
+## URL 
+
+```bash
+api url : http://localhost:8080/api
+doc url : http://localhost:8080/api-docs
+```
+
+
+
+
