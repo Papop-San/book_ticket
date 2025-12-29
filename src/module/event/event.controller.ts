@@ -12,12 +12,15 @@ import {
 import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
+@ApiTags('Events')
 @Controller('events')
 export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create a new event' })
   async create(@Body() createEventDto: CreateEventDto) {
     const data = await this.eventService.create(createEventDto);
 
@@ -29,6 +32,7 @@ export class EventController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all events' })
   async findAll() {
     const data = await this.eventService.findAll();
 
@@ -39,6 +43,7 @@ export class EventController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get event by ID' })
   async findOne(@Param('id') id: string) {
     const data = await this.eventService.findOne(Number(id));
 
@@ -53,6 +58,7 @@ export class EventController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update an event by ID' })
   async update(
     @Param('id') id: string,
     @Body() updateEventDto: UpdateEventDto,
@@ -67,6 +73,7 @@ export class EventController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete an event by ID' })
   async remove(@Param('id') id: string) {
     const data = await this.eventService.remove(Number(id));
 
