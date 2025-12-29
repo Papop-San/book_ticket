@@ -1,45 +1,86 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpStatus,
+  NotFoundException,
+} from '@nestjs/common';
 import { BookService } from './book.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 
 @Controller('bookings')
 export class BookController {
-  constructor(private readonly bookService: BookService) { }
+  constructor(private readonly bookService: BookService) {}
 
   @Post()
-  create(@Body() createBookDto: CreateBookDto) {
-    return this.bookService.create(createBookDto);
+  async create(@Body() createBookDto: CreateBookDto) {
+    const data = await this.bookService.create(createBookDto);
+
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Booking created successfully',
+      data,
+    };
   }
 
-
   @Get('/admin')
-  getEventBookings() {
-    return this.bookService.getEventBookings();
+  async getEventBookings() {
+    const data = await this.bookService.getEventBookings();
+
+    return {
+      status: HttpStatus.OK,
+      data,
+    };
   }
 
   @Get()
-  findAll() {
-    return this.bookService.findAll();
+  async findAll() {
+    const data = await this.bookService.findAll();
+
+    return {
+      status: HttpStatus.OK,
+      data,
+    };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.bookService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    const data = await this.bookService.findOne(Number(id));
+
+    if (!data) {
+      throw new NotFoundException(`Booking with id ${id} not found`);
+    }
+
+    return {
+      status: HttpStatus.OK,
+      data,
+    };
   }
 
   @Patch(':id')
-  update(@Param('id') id: number, @Body() updateBookDto: UpdateBookDto) {
-    return this.bookService.update(+id, updateBookDto);
+  async update(@Param('id') id: string, @Body() updateBookDto: UpdateBookDto) {
+    const data = await this.bookService.update(Number(id), updateBookDto);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Booking updated successfully',
+      data,
+    };
   }
 
   @Delete(':email')
-  remove(@Param('email') email: string) {
-    return this.bookService.remove(email);
+  async remove(@Param('email') email: string) {
+    const data = await this.bookService.remove(email);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Booking removed successfully',
+      data,
+    };
   }
-
-
-
-
-
 }

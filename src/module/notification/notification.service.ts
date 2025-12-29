@@ -7,11 +7,9 @@ import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { DbService } from '../../database/db.service';
 
-
 @Injectable()
 export class NotificationService {
-  constructor(private readonly db: DbService) { }
-
+  constructor(private readonly db: DbService) {}
 
   async create(dto: CreateNotificationDto) {
     try {
@@ -40,10 +38,10 @@ export class NotificationService {
         SELECT id, type , message 
         FROM notifications 
         ORDER BY id  
-        `
-      )
+        `,
+      );
     } catch (err) {
-      throw err
+      throw err;
     }
   }
 
@@ -55,15 +53,16 @@ export class NotificationService {
         FROM notifications 
         WHERE id = $1
         ORDER BY id  
-        `, [id]
-      )
+        `,
+        [id],
+      );
       if (!notification) {
         throw new NotFoundException(`Notification with id ${id} not found`);
       }
 
-      return notification
+      return notification;
     } catch (err) {
-      throw err
+      throw err;
     }
   }
 
@@ -78,14 +77,16 @@ export class NotificationService {
           updated_at = NOW()
         WHERE id = $3
         RETURNING *
-        `, [dto.type, dto.message, id])
+        `,
+        [dto.type, dto.message, id],
+      );
 
       if (!notification) {
         throw new NotFoundException(`Notifications with id ${id} not found`);
       }
-      return notification
+      return notification;
     } catch (err) {
-      throw err
+      throw err;
     }
   }
 
@@ -114,14 +115,16 @@ export class NotificationService {
 
   async checkBookSeats(id: number) {
     try {
-      const checkSeats = await this.db.query(`
+      const checkSeats = await this.db.query(
+        `
         SELECT 1
         FROM seats
         WHERE event_id = $1
           AND status != 'BOOKED'
         LIMIT 1;
-        `, [id])
-
+        `,
+        [id],
+      );
 
       if (checkSeats.length > 0) {
         return null;
@@ -136,12 +139,8 @@ export class NotificationService {
           `,
       );
       return notification;
-
-
     } catch (err) {
-      throw err
+      throw err;
     }
   }
-
-
 }

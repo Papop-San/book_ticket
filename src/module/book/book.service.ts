@@ -7,22 +7,21 @@ import { DbService } from '../../database/db.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 
-
 @Injectable()
 export class BookService {
-  constructor(private readonly db: DbService) { }
+  constructor(private readonly db: DbService) {}
 
   async create(dto: CreateBookDto) {
     try {
-      await this.db.query('BEGIN')
+      await this.db.query('BEGIN');
+
       const [seat] = await this.db.query(
         `
-      SELECT id, status
+      SELECT id, status, event_id
       FROM seats
       WHERE id = $1
       FOR UPDATE
       `,
-
         [dto.seat_id],
       );
 
@@ -34,14 +33,31 @@ export class BookService {
         throw new ConflictException('Seat already booked');
       }
 
+      const [existingBooking] = await this.db.query(
+        `
+      SELECT b.id
+      FROM bookings b
+      JOIN seats s ON b.seat_id = s.id
+      WHERE b.name = $1 AND s.event_id = $2
+      `,
+        [dto.name, seat.event_id],
+      );
+
+      if (existingBooking) {
+        throw new ConflictException(
+          `Name ${dto.name} has already booked a seat in this event`,
+        );
+      }
+
       const [book] = await this.db.query(
         `
-        INSERT INTO bookings (seat_id, name, email, status, created_at, updated_at )
-        VALUES ($1, $2, $3, 'BOOKED', NOW(), NOW())
-        RETURNING *
-        `,
-        [dto.seat_id, dto.name , dto.email],
+      INSERT INTO bookings (seat_id, name, email, status, created_at, updated_at)
+      VALUES ($1, $2, $3, 'BOOKED', NOW(), NOW())
+      RETURNING *
+      `,
+        [dto.seat_id, dto.name, dto.email],
       );
+
       await this.db.query(
         `
       UPDATE seats
@@ -52,16 +68,14 @@ export class BookService {
       );
 
       await this.db.query('COMMIT');
-      return book
-
-    } catch (err) {
+      return book;
+    } catch (err: any) {
       await this.db.query('ROLLBACK');
       if (err.code === '23505') {
         throw new ConflictException(`${dto.email} has already booked a seat`);
       }
       throw err;
     }
-
   }
 
   async findAll() {
@@ -70,13 +84,11 @@ export class BookService {
         `
         SELECT id , seat_id , name, email , status FROM bookings
          ORDER BY  seat_id
-        `
-      )
-
+        `,
+      );
     } catch (err) {
       throw err;
     }
-
   }
 
   async findOne(id: number) {
@@ -114,13 +126,7 @@ export class BookService {
       WHERE id = $5
       RETURNING *
       `,
-        [
-          dto.seat_id,
-          dto.name,
-          dto.email,
-          dto.status,
-          id,
-        ],
+        [dto.seat_id, dto.name, dto.email, dto.status, id],
       );
 
       if (!book) {
@@ -136,7 +142,6 @@ export class BookService {
     }
   }
 
-
   async remove(email: string) {
     const [booking] = await this.db.query(
       `SELECT * FROM bookings WHERE email = $1`,
@@ -147,14 +152,12 @@ export class BookService {
       throw new NotFoundException(`Booking with email ${email} not found`);
     }
 
-
     await this.db.query(
       `UPDATE seats
        SET status = 'AVAILABLE', updated_at = NOW()
        WHERE id = $1`,
       [booking.seat_id],
     );
-
 
     const deleted = await this.db.query(
       `DELETE FROM bookings WHERE email = $1 RETURNING *`,
@@ -170,7 +173,6 @@ export class BookService {
     };
   }
 
-
   async getEventBookings() {
     const events = await this.db.query(`SELECT * FROM events`);
 
@@ -178,19 +180,34 @@ export class BookService {
 
     for (const event of events) {
       const bookings = await this.db.query(
-        `SELECT name, email FROM bookings WHERE seat_id IN 
-       (SELECT id FROM seats WHERE event_id = $1)`,
+        `SELECT 
+          s.id AS seat_id,
+          s.seat_code,
+          COALESCE(b.name, '-') AS name,
+          COALESCE(b.email, '-') AS email,
+          COALESCE(b.status, '-') AS booking_status
+       FROM 
+          seats AS s
+       LEFT JOIN 
+          bookings AS b
+       ON 
+          b.seat_id = s.id
+       WHERE 
+          s.event_id = $1`,
         [event.id],
       );
 
-      const totalSeats = event.capacity;
-      const bookedSeats = bookings.length;
+      const totalSeats = bookings.length;
+      const bookedSeats = bookings.filter(
+        (b) => b.booking_status !== '-',
+      ).length;
       const availableSeats = totalSeats - bookedSeats;
 
       const status = availableSeats > 0 ? 'Available' : 'Full';
 
       result.push({
         event_id: event.id,
+        event_name: event.name,
         bookings,
         availableSeats,
         status,
@@ -199,6 +216,4 @@ export class BookService {
 
     return result;
   }
-
 }
-

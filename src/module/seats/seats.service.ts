@@ -2,7 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
-  BadRequestException
+  BadRequestException,
 } from '@nestjs/common';
 import { CreateSeatDto, Seat } from './dto/create-seat.dto';
 import { UpdateSeatDto } from './dto/update-seat.dto';
@@ -11,7 +11,7 @@ import { DbService } from '../../database/db.service';
 
 @Injectable()
 export class SeatsService {
-  constructor(private readonly db: DbService) { }
+  constructor(private readonly db: DbService) {}
 
   async create(dto: CreateSeatDto) {
     try {
@@ -61,7 +61,6 @@ export class SeatsService {
     }
   }
 
-
   async findAll() {
     try {
       return await this.db.query(
@@ -93,7 +92,7 @@ export class SeatsService {
 
       return seat;
     } catch (err) {
-      throw err
+      throw err;
     }
   }
 
@@ -148,6 +147,28 @@ export class SeatsService {
       return seats;
     } catch (err) {
       throw err;
+    }
+  }
+
+  async findEvent(id: number) {
+    try {
+      const rows = await this.db.query(
+        `
+      SELECT id, event_id, seat_code, status
+      FROM seats
+      WHERE event_id = $1
+      ORDER BY seat_code
+      `,
+        [id],
+      );
+
+      if (!rows.length) {
+        throw new NotFoundException(`No seats found for event ${id}`);
+      }
+
+      return rows;
+    } catch (error) {
+      throw error;
     }
   }
 }

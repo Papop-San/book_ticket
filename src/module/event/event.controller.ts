@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  NotFoundException,
+  HttpStatus,
+} from '@nestjs/common';
 import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
@@ -8,27 +18,62 @@ export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Post()
-  create(@Body() createEventDto: CreateEventDto) {
-    return this.eventService.create(createEventDto);
+  async create(@Body() createEventDto: CreateEventDto) {
+    const data = await this.eventService.create(createEventDto);
+
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Event created successfully',
+      data,
+    };
   }
 
   @Get()
-  findAll() {
-    return this.eventService.findAll();
+  async findAll() {
+    const data = await this.eventService.findAll();
+
+    return {
+      status: HttpStatus.OK,
+      data,
+    };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.eventService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    const data = await this.eventService.findOne(Number(id));
+
+    if (!data) {
+      throw new NotFoundException(`Event with id ${id} not found`);
+    }
+
+    return {
+      status: HttpStatus.OK,
+      data,
+    };
   }
 
   @Patch(':id')
-  update(@Param('id') id: number, @Body() updateEventDto: UpdateEventDto) {
-    return this.eventService.update(id, updateEventDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateEventDto: UpdateEventDto,
+  ) {
+    const data = await this.eventService.update(Number(id), updateEventDto);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Event updated successfully',
+      data,
+    };
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.eventService.remove(id);
+  async remove(@Param('id') id: string) {
+    const data = await this.eventService.remove(Number(id));
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Event removed successfully',
+      data,
+    };
   }
 }

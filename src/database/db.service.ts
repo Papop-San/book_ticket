@@ -10,14 +10,13 @@ export class DbService implements OnModuleInit, OnModuleDestroy {
   onModuleInit() {
    
     this.pool = new Pool({
-      user: process.env.DB_USER || 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      database: process.env.DB_NAME || 'seats',
-      password: process.env.DB_PASSWORD || '02749',
-      port: Number(process.env.DB_PORT) || 5432,
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST ,
+      database: process.env.DB_NAME ,
+      password: process.env.DB_PASSWORD ,
+      port: Number(process.env.DB_PORT) ,
     });
   }
-
 
   query<T = any>(text: string, params?: any[]): Promise<T[]> {
     return this.pool.query(text, params).then(res => res.rows);
