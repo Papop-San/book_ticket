@@ -30,9 +30,10 @@ npm install
 ## Command Seed Running
 
 ```bash
-  npx ts-node .\src\database\seed\seed-events.ts
-  npx ts-node .\src\database\seed\seed-notification.ts
-  npx ts-node .\src\database\seed\seed-seats.ts
+create schema:  npx ts-node .\src\database\seed\seed-schema.ts
+create event:   npx ts-node .\src\database\seed\seed-events.ts
+create seats:  npx ts-node .\src\database\seed\seed-seats.ts
+create notifications:  npx ts-node .\src\database\seed\seed-notification.ts
 ```
 
 ## Command Running 
